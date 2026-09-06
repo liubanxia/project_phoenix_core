@@ -67,3 +67,35 @@ def test_result_fusion_ignores_non_mapping_and_non_list_payloads():
     assert result.lesions[0].label == "异常候选灶"
     assert result.lesions[0].confidence == 0.0
     assert result.lesions[0].source_model == "mixed"
+
+
+def test_result_fusion_tolerates_invalid_geometry_and_uses_label_score():
+    result = fuse_results(
+        {
+            "synthetic_detector": {
+                "lesions": [
+                    {
+                        "name": "synthetic_candidate",
+                        "label_score": "0.73",
+                        "image_index": "not-an-int",
+                        "point": ["bad", 12],
+                        "box": [1, "bad", 3, 4],
+                        "box_3d": "not-a-box",
+                        "world_point_lps": [1, 2],
+                    }
+                ]
+            }
+        }
+    )
+
+    assert result.warnings == []
+    assert len(result.lesions) == 1
+    lesion = result.lesions[0]
+    assert lesion.label == "synthetic_candidate"
+    assert lesion.confidence == 0.73
+    assert lesion.image_index is None
+    assert lesion.point is None
+    assert lesion.box is None
+    assert lesion.box_3d is None
+    assert lesion.world_point_lps is None
+    assert lesion.source_model == "synthetic_detector"
