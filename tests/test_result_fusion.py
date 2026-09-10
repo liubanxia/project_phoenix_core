@@ -99,3 +99,27 @@ def test_result_fusion_tolerates_invalid_geometry_and_uses_label_score():
     assert lesion.box_3d is None
     assert lesion.world_point_lps is None
     assert lesion.source_model == "synthetic_detector"
+
+
+def test_result_fusion_tolerates_invalid_voxel_count():
+    result = fuse_results(
+        {
+            "synthetic_segmenter": {
+                "lesions": [
+                    {
+                        "finding": "synthetic_mask",
+                        "confidence": 0.66,
+                        "voxel_count": "not-an-int",
+                    }
+                ]
+            }
+        }
+    )
+
+    assert result.warnings == []
+    assert len(result.lesions) == 1
+    lesion = result.lesions[0]
+    assert lesion.label == "synthetic_mask"
+    assert lesion.confidence == 0.66
+    assert lesion.voxel_count == 0
+    assert lesion.source_model == "synthetic_segmenter"
