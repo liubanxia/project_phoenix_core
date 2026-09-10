@@ -78,7 +78,7 @@ def _normalise_lesion(model_name: str, item: Dict[str, Any]) -> Lesion:
         box_3d=box_3d,
         world_point_lps=(tuple(world_point_lps[:3]) if world_point_lps is not None and len(world_point_lps) >= 3 else None),
         geometry_mode=geometry_mode,
-        voxel_count=int(item.get("voxel_count", 0) or 0),
+        voxel_count=_int_or_none(item.get("voxel_count")) or 0,
         source_model=model_name,
         finding=str(item.get("finding", "") or ""),
         metadata={key: value for key, value in item.items() if key not in {"label", "label_name", "name", "finding", "type", "confidence", "score", "label_score", "series_uid", "image_index", "point", "box", "box_3d", "world_point_lps", "geometry_mode", "voxel_count", "geometry"}},
